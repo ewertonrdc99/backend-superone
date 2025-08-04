@@ -26,7 +26,7 @@ app.post("/resposta-inteligente", async (req, res) => {
       },
       {
         headers: {
-          "Authorization": "Bearer sk-15612cffa56a4652b94913963b27af91",
+          Authorization: "Bearer sk-15612cffa56a4652b94913963b27af91",
           "Content-Type": "application/json"
         }
       }
@@ -45,7 +45,6 @@ app.post("/resposta-inteligente", async (req, res) => {
       enviadoPara: numeroCliente,
       resposta
     });
-
   } catch (error) {
     console.error("Erro:", error.message);
     res.status(500).json({ erro: "Falha ao gerar ou enviar resposta com IA" });
