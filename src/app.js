@@ -1,43 +1,53 @@
 const express = require("express");
-const axios = require("axios"); // para enviar resposta pro WAHA
+const axios = require("axios");
 const app = express();
 app.use(express.json());
 
+// Rota de status
 app.get("/", (req, res) => {
-  res.json({ message: "🚀 Backend SuperOne rodando liso!" });
+  res.json({ message: "🚀 Backend SuperOne rodando liso com IA!" });
 });
 
+// Rota principal com IA
 app.post("/resposta-inteligente", async (req, res) => {
   const { numeroCliente, mensagem } = req.body;
 
-  let resposta = "";
-
-  // 💡 Lógica inteligente simples
-  if (mensagem.toLowerCase().includes("desconto")) {
-    resposta = "🎉 Você ganhou 10% de desconto! Use o cupom SUPER10.";
-  } else if (mensagem.toLowerCase().includes("oi") || mensagem.toLowerCase().includes("olá")) {
-    resposta = "👋 Olá! Como posso te ajudar hoje?";
-  } else {
-    // Aqui você poderia usar Copilot ou ChatGPT, mas vamos manter simples
-    resposta = "🤖 Ainda estou aprendendo, mas recebi: " + mensagem;
-  }
-
-  // 🚀 Envia a resposta pro WhatsApp via WAHA
   try {
-    await axios.post("https://api.waha.com.br/send-message", {
-      to: numeroCliente,
-      message: resposta,
-      token: process.env.TOKEN_WAHA // ideal usar variáveis de ambiente!
+    // 💬 Chamada para a IA da DeepSeek
+    const iaResponse = await axios.post(
+      "https://api.deepseek.com/chat/completions",
+      {
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: "Você é um assistente útil e educado." },
+          { role: "user", content: mensagem }
+        ]
+      },
+      {
+        headers: {
+          "Authorization": "Bearer sk-15612cffa56a4652b94913963b27af91",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const resposta = iaResponse.data.choices[0].message.content;
+
+    // 📲 Enviar resposta pro cliente via WAHA
+    await axios.post("http://191.252.60.42:3000/message/sendText", {
+      chatId: numeroCliente,
+      text: resposta
     });
 
     res.json({
-      status: "✅ Enviado com sucesso",
+      status: "✅ Mensagem enviada com IA!",
       enviadoPara: numeroCliente,
       resposta
     });
-  } catch (err) {
-    console.error("Erro ao enviar para WAHA:", err.message);
-    res.status(500).json({ erro: "Falha ao enviar mensagem" });
+
+  } catch (error) {
+    console.error("Erro:", error.message);
+    res.status(500).json({ erro: "Falha ao gerar ou enviar resposta com IA" });
   }
 });
 
