@@ -1,19 +1,20 @@
 const express = require("express");
 const axios = require("axios");
+
 const app = express();
 app.use(express.json());
 
-// Rota de status
+// 🔍 Rota de verificação
 app.get("/", (req, res) => {
   res.json({ message: "🚀 Backend SuperOne rodando liso com IA!" });
 });
 
-// Rota principal com IA
+// 🤖 Rota principal com inteligência artificial
 app.post("/resposta-inteligente", async (req, res) => {
   const { numeroCliente, mensagem } = req.body;
 
   try {
-    // 💬 Chamada para a IA da DeepSeek
+    // 🧠 Chamada à IA da DeepSeek
     const iaResponse = await axios.post(
       "https://api.deepseek.com/chat/completions",
       {
@@ -33,7 +34,7 @@ app.post("/resposta-inteligente", async (req, res) => {
 
     const resposta = iaResponse.data.choices[0].message.content;
 
-    // 📲 Enviar resposta pro cliente via WAHA
+    // 📲 Envio da resposta para o WhatsApp via WAHA
     await axios.post("http://191.252.60.42:3000/message/sendText", {
       chatId: numeroCliente,
       text: resposta
@@ -51,5 +52,6 @@ app.post("/resposta-inteligente", async (req, res) => {
   }
 });
 
+// 🌐 Inicialização do servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor ouvindo na porta ${PORT}`));
